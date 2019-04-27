@@ -14,7 +14,12 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -87,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
 		}));
 	}
 	
-	private void createNote(String title, String note) {
-		long id = db.insertNote(title, note);
+	private void createNote(String title, String note, String priority, String progress) {
+		long id = db.insertNote(title, note, priority, progress);
 		
 		Note n = db.getNote(id);
 		
@@ -101,9 +106,12 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 	
-	private void updateNote(String note, int position) {
+	private void updateNote(String note, int position, String title, String priority, String progress) {
 		Note n = notesList.get(position);
 		n.setNote(note);
+		n.setTitle( title );
+		n.setPriority( priority );
+		n.setProgress( progress );
 		
 		db.updateNote(n);
 		
@@ -125,10 +133,10 @@ public class MainActivity extends AppCompatActivity {
 	}
 	
 	private void showActionsDialog(final int position) {
-		CharSequence colors[] = new CharSequence[]{"Edit", "Delete"};
+		CharSequence colors[] = new CharSequence[]{"Редактировать", "Удалить"};
 		
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Choose option");
+		builder.setTitle("Выберите действие");
 		builder.setItems(colors, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -149,22 +157,67 @@ public class MainActivity extends AppCompatActivity {
 		AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(MainActivity.this);
 		alertDialogBuilderUserInput.setView(view);
 		
-		final EditText inputTitle = view.findViewById( R.id.note_title );
+		final EditText inputTitle = view.findViewById( R.id.dialog_title );
 		final EditText inputNote = view.findViewById(R.id.note);
+		final EditText inputPriority = view.findViewById( R.id.priority_result );
+		final TextView selection = (TextView) view.findViewById( R.id.selection );
+		final TextView progresstext = (TextView) view.findViewById( R.id.progress_edit );
+		final SeekBar seekBar = (SeekBar) view.findViewById( R.id.seekBar );
+		
+		final RadioGroup radGr = view.findViewById( R.id.radioGroup );
+		radGr.setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener( ) {
+			@Override
+			public void onCheckedChanged( RadioGroup arg0 , int id ) {
+				
+				switch ( id ){
+					case R.id.high:
+						selection.setText( "Высокий" );
+						break;
+					case R.id.middle:
+						selection.setText( "Средний" );
+						break;
+					case R.id.low:
+						selection.setText( "Низкий" );
+						break;
+					default:
+						break;
+				}
+			}
+		} );
+		
+		seekBar.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener( ) {
+			@Override
+			public void onProgressChanged( SeekBar seekBar , int progress , boolean fromUser ) {
+				progresstext.setText( String.valueOf( seekBar.getProgress() ) );
+			}
+			
+			@Override
+			public void onStartTrackingTouch( SeekBar seekBar ) {
+			
+			}
+			
+			@Override
+			public void onStopTrackingTouch( SeekBar seekBar ) {
+			
+			}
+		} );
+		
+		
 		TextView dialogTitle = view.findViewById(R.id.dialog_title);
-		dialogTitle.setText(!shouldUpdate ? getString(R.string.lbl_new_note_title) : getString(R.string.lbl_edit_note_title));
+//		dialogTitle.setText(!shouldUpdate ? getString(R.string.lbl_new_note_title) : getString(R.string.lbl_edit_note_title));
+		dialogTitle.setText( note.getTitle());
 		
 		if (shouldUpdate && note != null) {
 			inputNote.setText(note.getNote());
 		}
 		alertDialogBuilderUserInput
 				.setCancelable(false)
-				.setPositiveButton(shouldUpdate ? "update" : "save", new DialogInterface.OnClickListener() {
+				.setPositiveButton(shouldUpdate ? "обновить" : "сохранить", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialogBox, int id) {
 					
 					}
 				})
-				.setNegativeButton("cancel",
+				.setNegativeButton("закрыть",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialogBox, int id) {
 								dialogBox.cancel();
@@ -178,16 +231,18 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				if ( TextUtils.isEmpty(inputNote.getText().toString())) {
-					Toast.makeText(MainActivity.this, "Enter note!", Toast.LENGTH_SHORT).show();
+					Toast.makeText(MainActivity.this, "Опишите задачу!", Toast.LENGTH_SHORT).show();
 					return;
 				} else {
 					alertDialog.dismiss();
 				}
 				
 				if (shouldUpdate && note != null) {
-					updateNote(inputNote.getText().toString(), position);
+					updateNote(inputNote.getText().toString(), position, inputTitle.getText().toString(), selection.getText().toString()
+					, progresstext.getText().toString());
 				} else {
-					createNote(inputTitle.getText().toString(), inputNote.getText().toString());
+					createNote(inputTitle.getText().toString(), inputNote.getText().toString(), selection.getText().toString()
+					, progresstext.getText().toString());
 				}
 			}
 		});

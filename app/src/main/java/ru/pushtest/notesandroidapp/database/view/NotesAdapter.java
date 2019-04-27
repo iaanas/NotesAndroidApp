@@ -1,17 +1,13 @@
 package ru.pushtest.notesandroidapp.database.view;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,15 +46,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 		myViewHolder.title.setText( note.getTitle() );
 		myViewHolder.note.setText( note.getNote() );
 		
-		if(cEnd == 0){
-			myViewHolder.dot.setImageResource( R.drawable.a_reb );
-		} else if(cEnd == 1){
-			myViewHolder.dot.setImageResource( R.drawable.c_yellow );
-		} else if(cEnd == 2){
-			myViewHolder.dot.setImageResource( R.drawable.e_green );
-		}
+		myViewHolder.priority.setText( note.getPriority());
 		
 		myViewHolder.timestamp.setText( formatDate(note.getTimestamp()) );
+		
+		myViewHolder.progress.setText( note.getProgress() );
 	
 	}
 	
@@ -84,6 +76,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 		public TextView note;
 		public ImageView dot;
 		public TextView timestamp;
+		public TextView priority;
+		public TextView progress;
+		
 		
 		public MyViewHolder( View view){
 			super(view);
@@ -91,6 +86,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 			note = view.findViewById( R.id.note );
 			dot = view.findViewById( R.id.dot );
 			timestamp = view.findViewById( R.id.timestamp );
+			priority = view.findViewById( R.id.priority_result );
+			progress = view.findViewById( R.id.progress );
 		}
 	}
 	

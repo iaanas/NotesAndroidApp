@@ -6,4 +6,10 @@
     <string name="lbl_new_note_title">Новое дело</string>
     <string name="lbl_edit_note_title">Редактировать дело</string>
     <string name="hint_enter_note">Введите описание!</string>
+
+    <string-array name="priorityList">
+        <item>Низкий</item>
+        <item>Средний</item>
+        <item>Высокий</item>
+    </string-array>
 </resources>

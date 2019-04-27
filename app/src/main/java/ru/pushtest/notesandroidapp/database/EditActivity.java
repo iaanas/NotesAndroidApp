@@ -5,7 +5,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,6 +40,7 @@ public class EditActivity extends AppCompatActivity {
 	
 	public int count;
 	public static int countTotal;
+	public String priority;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -66,6 +66,7 @@ public class EditActivity extends AppCompatActivity {
 				yellowButton.setImageResource( R.drawable.c_yellow );
 				greenButton.setImageResource( R.drawable.e_green );
 				count = 0;
+				priority = "Высокий";
 			}
 		} );
 		
@@ -76,6 +77,7 @@ public class EditActivity extends AppCompatActivity {
 				redButton.setImageResource( R.drawable.a_reb );
 				greenButton.setImageResource( R.drawable.e_green );
 				count = 1;
+				priority = "Средний";
 			}
 		} );
 		
@@ -86,6 +88,7 @@ public class EditActivity extends AppCompatActivity {
 				redButton.setImageResource( R.drawable.a_reb );
 				greenButton.setImageResource( R.drawable.g_green );
 				count = 2;
+				priority = "Низкий";
 			}
 		} );
 		
@@ -93,11 +96,11 @@ public class EditActivity extends AppCompatActivity {
 		saveNote.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v ) {
-				createNote( titleNewNote.getText().toString(), newNote.getText().toString() );
+				createNote( titleNewNote.getText().toString(), newNote.getText().toString(), priority );
 				Intent intent = new Intent( EditActivity.this, MainActivity.class );
 				
 				countTotal = count;
-				Toast.makeText( EditActivity.this, "Count: "+countTotal, Toast.LENGTH_SHORT ).show();
+				Toast.makeText( EditActivity.this, "ПРИОРИТЕТ: "+priority, Toast.LENGTH_SHORT ).show();
 				
 				startActivity( intent );
 			}
@@ -105,8 +108,8 @@ public class EditActivity extends AppCompatActivity {
 		
 	}
 	
-	private void createNote(String title, String note) {
-		long id = db.insertNote(title, note);
+	private void createNote( String title , String note , String priority ) {
+		long id = db.insertNote(title, note, priority, "0" );
 		
 		Note n = db.getNote(id);
 		

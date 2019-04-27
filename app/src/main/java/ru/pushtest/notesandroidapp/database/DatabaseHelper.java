@@ -37,12 +37,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	
 	}
 	
-	public long insertNote(String title, String note){
+	public long insertNote(String title, String note, String priority, String progress){
 		SQLiteDatabase db = this.getWritableDatabase();
 		
 		ContentValues values = new ContentValues(  );
 		values.put( Note.COLUMN_TITLE, title );
 		values.put( Note.COLUMN_NOTE, note );
+		values.put( Note.COLUMN_PRIORITY, priority );
+		values.put( Note.COLUMN_PROGRESS, progress );
 		
 		long id = db.insert( Note.TABLE_NAME, null, values);
 		
@@ -55,7 +57,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		
 		Cursor cursor = db.query(Note.TABLE_NAME,
-				new String[]{Note.COLUMN_ID, Note.COLUMN_TITLE, Note.COLUMN_NOTE, Note.COLUMN_TIMESTAMP},
+				new String[]{Note.COLUMN_ID, Note.COLUMN_TITLE, Note.COLUMN_NOTE, Note.COLUMN_TIMESTAMP, Note.COLUMN_PRIORITY, Note.COLUMN_PROGRESS},
 				Note.COLUMN_ID + "=?",
 				new String[]{String.valueOf(id)}, null, null, null, null);
 		
@@ -67,7 +69,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				cursor.getInt(cursor.getColumnIndex(Note.COLUMN_ID)),
 				cursor.getString( cursor.getColumnIndex( Note.COLUMN_TITLE ) ),
 				cursor.getString(cursor.getColumnIndex(Note.COLUMN_NOTE)),
-				cursor.getString(cursor.getColumnIndex(Note.COLUMN_TIMESTAMP)));
+				cursor.getString(cursor.getColumnIndex(Note.COLUMN_TIMESTAMP)),
+		        cursor.getString( cursor.getColumnIndex( Note.COLUMN_PRIORITY ) ),
+		        cursor.getString( cursor.getColumnIndex( Note.COLUMN_PROGRESS ) ));
 		
 		cursor.close();
 		return note;
@@ -90,6 +94,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					note.setTitle( cursor.getString( cursor.getColumnIndex( Note.COLUMN_TITLE ) ) );
 					note.setNote(cursor.getString(cursor.getColumnIndex(Note.COLUMN_NOTE)));
 					note.setTimestamp(cursor.getString(cursor.getColumnIndex(Note.COLUMN_TIMESTAMP)));
+					note.setPriority( cursor.getString( cursor.getColumnIndex( Note.COLUMN_PRIORITY ) ) );
+					note.setProgress( cursor.getString( cursor.getColumnIndex( Note.COLUMN_PROGRESS ) ) );
 					
 					notes.add(note);
 				} while (cursor.moveToNext());
@@ -118,6 +124,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		ContentValues values = new ContentValues();
 		values.put( Note.COLUMN_TITLE, note.getTitle() );
 		values.put(Note.COLUMN_NOTE, note.getNote());
+		values.put( Note.COLUMN_PRIORITY, note.getPriority() );
+		values.put( Note.COLUMN_PROGRESS, note.getPriority() );
 		
 		return db.update(Note.TABLE_NAME, values, Note.COLUMN_ID + " = ?",
 				new String[]{String.valueOf(note.getId())});
