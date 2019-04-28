@@ -8,6 +8,8 @@ public class Note {
 	public static final String COLUMN_TIMESTAMP = "timestamp";
 	public static final String COLUMN_PRIORITY = "priority";
 	public static final String COLUMN_PROGRESS = "progress";
+	public static final String COLUMN_HOURS = "hours";
+	public static final String COLUMN_MINUTES = "minutes";
 	
 	private int id;
 	private String title;
@@ -15,6 +17,8 @@ public class Note {
 	private String timestamp;
 	private String priority;
 	private String progress;
+	private String hours;
+	private String minutes;
 	
 	
 	public static final String CREATE_TABLE =
@@ -24,19 +28,23 @@ public class Note {
 					+ COLUMN_NOTE + " TEXT,"
 					+ COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
 	                + COLUMN_PRIORITY  + " TEXT,"
-					+ COLUMN_PROGRESS + " TEXT"
+					+ COLUMN_PROGRESS + " TEXT,"
+					+ COLUMN_HOURS + " TEXT,"
+					+ COLUMN_MINUTES + " TEXT"
 					+ ")";
 	
 	public Note( ) {
 	}
 	
-	public Note( int id , String title , String note , String timestamp , String priority , String progress ) {
+	public Note( int id , String title , String note , String timestamp , String priority , String progress , String hours , String minutes ) {
 		this.id = id;
 		this.title = title;
 		this.note = note;
 		this.timestamp = timestamp;
 		this.priority = priority;
 		this.progress = progress;
+		this.hours = hours;
+		this.minutes = minutes;
 	}
 	
 	public int getId( ) {
@@ -85,5 +93,21 @@ public class Note {
 	
 	public void setProgress( String progress ) {
 		this.progress = progress;
+	}
+	
+	public String getHours( ) {
+		return hours;
+	}
+	
+	public void setHours( String hours ) {
+		this.hours = hours;
+	}
+	
+	public String getMinutes( ) {
+		return minutes;
+	}
+	
+	public void setMinutes( String minutes ) {
+		this.minutes = minutes;
 	}
 }

@@ -1,5 +1,6 @@
 package ru.pushtest.notesandroidapp;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.CoordinatorLayout;
@@ -14,12 +15,9 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +30,7 @@ import ru.pushtest.notesandroidapp.database.model.Note;
 import ru.pushtest.notesandroidapp.database.utils.MyDividerItemDecoration;
 import ru.pushtest.notesandroidapp.database.utils.RecyclerTouchListener;
 import ru.pushtest.notesandroidapp.database.view.NotesAdapter;
+import ru.pushtest.notesandroidapp.notifications.NotificationHelper;
 
 public class MainActivity extends AppCompatActivity {
 	
@@ -43,24 +42,29 @@ public class MainActivity extends AppCompatActivity {
 	
 	private DatabaseHelper db;
 	
+	private String hours;
+	private String minutes;
+	private Context mContext;
+	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_main );
 		
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		
 		coordinatorLayout = findViewById(R.id.coordinator_layout);
 		recyclerView = findViewById(R.id.recycler_view);
 		noNotesView = findViewById(R.id.empty_notes_view);
 		
+		
 		db = new DatabaseHelper(this);
 		
 		notesList.addAll(db.getAllNotes());
 		
 		
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fab);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -92,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
 		}));
 	}
 	
-	private void createNote(String title, String note, String priority, String progress) {
-		long id = db.insertNote(title, note, priority, progress);
+	private void createNote(String title, String note, String priority, String progress, String hours, String minutes) {
+		long id = db.insertNote(title, note, priority, progress, hours, minutes);
 		
 		Note n = db.getNote(id);
 		
@@ -106,12 +110,14 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 	
-	private void updateNote(String note, int position, String title, String priority, String progress) {
+	private void updateNote(String note, int position, String title, String priority, String progress, String hours, String minutes) {
 		Note n = notesList.get(position);
 		n.setNote(note);
 		n.setTitle( title );
 		n.setPriority( priority );
 		n.setProgress( progress );
+		n.setHours( hours );
+		n.setMinutes( minutes );
 		
 		db.updateNote(n);
 		
@@ -160,9 +166,13 @@ public class MainActivity extends AppCompatActivity {
 		final EditText inputTitle = view.findViewById( R.id.dialog_title );
 		final EditText inputNote = view.findViewById(R.id.note);
 		final EditText inputPriority = view.findViewById( R.id.priority_result );
-		final TextView selection = (TextView) view.findViewById( R.id.selection );
-		final TextView progresstext = (TextView) view.findViewById( R.id.progress_edit );
-		final SeekBar seekBar = (SeekBar) view.findViewById( R.id.seekBar );
+		final TextView selection = view.findViewById( R.id.selection );
+		final TextView progresstext = view.findViewById( R.id.progress_edit );
+		final SeekBar seekBar = view.findViewById( R.id.seekBar );
+		
+		final EditText hoursView = view.findViewById( R.id.alarm_hours );
+		final EditText minutesView = view.findViewById( R.id.alarm_minutes );
+		
 		
 		final RadioGroup radGr = view.findViewById( R.id.radioGroup );
 		radGr.setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener( ) {
@@ -238,11 +248,17 @@ public class MainActivity extends AppCompatActivity {
 				}
 				
 				if (shouldUpdate && note != null) {
+					hours = hoursView.getText().toString();
+					minutes = minutesView.getText().toString();
 					updateNote(inputNote.getText().toString(), position, inputTitle.getText().toString(), selection.getText().toString()
-					, progresstext.getText().toString());
+					, progresstext.getText().toString(), hoursView.getText().toString(), minutesView.getText().toString());
+					NotificationHelper.scheduleRepeatingRTCNotification(MainActivity.this, hoursView.getText().toString(), minutesView.getText().toString());
+					NotificationHelper.enableBootReceiver(MainActivity.this);
 				} else {
 					createNote(inputTitle.getText().toString(), inputNote.getText().toString(), selection.getText().toString()
-					, progresstext.getText().toString());
+					, progresstext.getText().toString(), hoursView.getText().toString(), minutesView.getText().toString());
+					NotificationHelper.scheduleRepeatingRTCNotification(MainActivity.this, hoursView.getText().toString(), minutesView.getText().toString());
+					NotificationHelper.enableBootReceiver(MainActivity.this);
 				}
 			}
 		});
@@ -256,6 +272,36 @@ public class MainActivity extends AppCompatActivity {
 			noNotesView.setVisibility(View.VISIBLE);
 		}
 	}
+	
+//	public void clickToggleButtonRTC(View view) {
+//		boolean isEnabled = ((ToggleButton)view).isEnabled();
+//
+//		if (isEnabled) {
+//			NotificationHelper.scheduleRepeatingRTCNotification(mContext, hours, minutes);
+//			NotificationHelper.enableBootReceiver(mContext);
+//		} else {
+//			NotificationHelper.cancelAlarmRTC();
+//			NotificationHelper.disableBootReceiver(mContext);
+//		}
+//	}
+//
+//	public void clickToggleButtonElapsed(View view) {
+//		boolean isEnabled = ((ToggleButton)view).isEnabled();
+//
+//		if (isEnabled) {
+//			NotificationHelper.scheduleRepeatingElapsedNotification(mContext);
+//			NotificationHelper.enableBootReceiver(mContext);
+//		} else {
+//			NotificationHelper.cancelAlarmElapsed();
+//			NotificationHelper.disableBootReceiver(mContext);
+//		}
+//	}
+//
+//	public void cancelAlarms(View view) {
+//		NotificationHelper.cancelAlarmRTC();
+//		NotificationHelper.cancelAlarmElapsed();
+//		NotificationHelper.disableBootReceiver(mContext);
+//	}
 	
 	
 }

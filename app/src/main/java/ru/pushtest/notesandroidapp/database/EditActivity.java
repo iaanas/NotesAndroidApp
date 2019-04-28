@@ -5,17 +5,21 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.pushtest.notesandroidapp.MainActivity;
+import ru.pushtest.notesandroidapp.notifications.NotificationHelper;
 import ru.pushtest.notesandroidapp.R;
 import ru.pushtest.notesandroidapp.database.model.Note;
 import ru.pushtest.notesandroidapp.database.view.NotesAdapter;
@@ -42,22 +46,31 @@ public class EditActivity extends AppCompatActivity {
 	public static int countTotal;
 	public String priority;
 	
+	private EditText hours;
+	private EditText minutes;
+	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_edit );
 		
-		titleNewNote = (EditText ) findViewById( R.id.edt_title );
-		newNote = (EditText) findViewById( R.id.edt_body_note );
-		saveNote = (Button ) findViewById( R.id.btn_save_note );
+		Toolbar mActionBarToolbar = findViewById(R.id.toolbar);
+		setSupportActionBar(mActionBarToolbar);
+		
+		titleNewNote = findViewById( R.id.edt_title );
+		newNote = findViewById( R.id.edt_body_note );
+		saveNote = findViewById( R.id.btn_save_note );
 		
 		db = new DatabaseHelper(this);
 		mAdapter = new NotesAdapter(this, notesList);
 		noNotesView = findViewById(R.id.empty_notes_view);
 		
-		redButton = ( ImageButton ) findViewById( R.id.btn_red );
-		yellowButton = (ImageButton ) findViewById( R.id.btn_yellow );
-		greenButton = (ImageButton ) findViewById( R.id.btn_green );
+		redButton = findViewById( R.id.btn_red );
+		yellowButton = findViewById( R.id.btn_yellow );
+		greenButton = findViewById( R.id.btn_green );
+		
+		hours = findViewById( R.id.alarm_hours );
+		minutes = findViewById( R.id.alarm_minutes );
 		
 		redButton.setOnClickListener( new View.OnClickListener( ) {
 			@Override
@@ -96,20 +109,43 @@ public class EditActivity extends AppCompatActivity {
 		saveNote.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v ) {
-				createNote( titleNewNote.getText().toString(), newNote.getText().toString(), priority );
+				createNote( titleNewNote.getText().toString(), newNote.getText().toString(), priority,
+						hours.getText().toString(), minutes.getText().toString());
 				Intent intent = new Intent( EditActivity.this, MainActivity.class );
 				
 				countTotal = count;
-				Toast.makeText( EditActivity.this, "ПРИОРИТЕТ: "+priority, Toast.LENGTH_SHORT ).show();
+				NotificationHelper.scheduleRepeatingRTCNotification(EditActivity.this, hours.getText().toString(), minutes.getText().toString());
+				NotificationHelper.enableBootReceiver(EditActivity.this);
 				
 				startActivity( intent );
 			}
 		} );
 		
+		
 	}
 	
-	private void createNote( String title , String note , String priority ) {
-		long id = db.insertNote(title, note, priority, "0" );
+	@Override
+	public boolean onCreateOptionsMenu( Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.toolbar_menu, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected( MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.action_close:
+				Intent intent = new Intent( EditActivity.this, MainActivity.class );
+				startActivity( intent );
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	private void createNote( String title , String note , String priority, String hours, String minutes ) {
+		long id = db.insertNote(title, note, priority, "0", hours, minutes );
 		
 		Note n = db.getNote(id);
 		
@@ -124,5 +160,35 @@ public class EditActivity extends AppCompatActivity {
 		
 		return countTotal;
 	}
+	
+//	public void clickToggleButtonRTC(View view) {
+//		boolean isEnabled = ((ToggleButton)view).isEnabled();
+//
+//		if (isEnabled) {
+//			NotificationHelper.scheduleRepeatingRTCNotification(mContext, hours.getText().toString(), minutes.getText().toString());
+//			NotificationHelper.enableBootReceiver(mContext);
+//		} else {
+//			NotificationHelper.cancelAlarmRTC();
+//			NotificationHelper.disableBootReceiver(mContext);
+//		}
+//	}
+//
+//	public void clickToggleButtonElapsed(View view) {
+//		boolean isEnabled = ((ToggleButton)view).isEnabled();
+//
+//		if (isEnabled) {
+//			NotificationHelper.scheduleRepeatingElapsedNotification(mContext);
+//			NotificationHelper.enableBootReceiver(mContext);
+//		} else {
+//			NotificationHelper.cancelAlarmElapsed();
+//			NotificationHelper.disableBootReceiver(mContext);
+//		}
+//	}
+//
+//	public void cancelAlarms(View view) {
+//		NotificationHelper.cancelAlarmRTC();
+//		NotificationHelper.cancelAlarmElapsed();
+//		NotificationHelper.disableBootReceiver(mContext);
+//	}
 
 }
